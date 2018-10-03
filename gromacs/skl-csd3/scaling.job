@@ -1,0 +1,19 @@
+#!/bin/bash
+#SBATCH -A T2-CSRSE-CPU
+#SBATCH -p skylake
+#SBATCH --nodes=32
+#SBATCH --ntasks=1024
+#SBATCH --time=02:00:00
+
+export I_MPI_PIN_DOMAIN=omp:compact
+export I_MPI_PIN_ORDER=scatter
+
+export GMX_MAXBACKUP=-1
+mkdir logs
+for N in 32 16 8 4 2
+do
+    mpirun -n $[$N*32] -ppn 32 "$BUILD_DIR/bin/gmx_mpi" mdrun \
+        -s "$LARGE_BENCHMARK" \
+        -noconfout -nb cpu -ntomp 1
+    mv md.log logs/$N.log
+done
